@@ -1,13 +1,21 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, make_response
+from flask_cors import CORS
+import json
+import logging
 
 app = Flask(__name__)
+CORS(app)
+
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 @app.route('/api/messages', methods=['POST'])
-def handle_message():
-    message = request.json['message']
-    # Do some processing on the message
-    response = {'status': 'success', 'message': f'Received message: {message}'}
-    return jsonify(response)
+def post_message():
+    message = request.get_json().get('message')
+    print(message)
+    response = make_response(json.dumps({'success': True}))
+    response.headers['Content-Type'] = 'application/json'
+    return response
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5001)

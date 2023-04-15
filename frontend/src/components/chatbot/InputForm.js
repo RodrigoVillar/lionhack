@@ -45,9 +45,26 @@ const InputForm = (props) => {
     }
   };
 
-  const sendToBackend = async (message) => {
+//   const sendToBackend = async (message) => {
+//     try {
+//       const response = await fetch('http://localhost:5000/api/messages', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({ message }),
+//       });
+
+//       const data = await response.json();
+//       console.log('Response from backend:', data);
+//     } catch (error) {
+//       console.error('Error sending message to backend:', error);
+//     }
+//   };
+
+const sendToBackend = async (message) => {
     try {
-      const response = await fetch('http://localhost:5000/api/messages', {
+      const response = await fetch('http://localhost:5001/api/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
