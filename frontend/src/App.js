@@ -1,27 +1,25 @@
 import React, { useState } from 'react';
 import './App.css';
-import ChatWindow from './components/ChatWindow';
-import InputForm from './components/InputForm';
-<script src="http://localhost:8097"></script>
+import InputForm from './components/chatbot/InputForm';
+import MessageList from './components/chatbot/MessageList';
+import Chatbot from './components/chatbot/Chatbot'
 
 function App() {
-
   const [messages, setMessages] = useState([]);
 
-  function addMessage(message) {
-    setMessages((prevMessages) => [...prevMessages, message]);
-  }
+  const handleSendMessage = (message) => {
+    setMessages([...messages, { text: message, sender: 'user' }]);
+    // Add your logic for the chatbot response here
+  };
 
   return (
     <div className="App">
-      <h1>Rutnell!</h1>
       <div className="chat-container">
-        <ChatWindow messages={messages} />
-        <InputForm onSubmit={addMessage} />
+        <MessageList messages={messages} />
+        <InputForm onSendMessage={handleSendMessage} />
       </div>
     </div>
   );
-
 }
 
 export default App;

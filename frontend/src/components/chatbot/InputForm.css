@@ -1,0 +1,26 @@
+.input-form {
+    display: flex;
+    padding: 8px;
+    border-top: 1px solid #f1f1f1;
+  }
+  
+  .input-form input {
+    flex-grow: 1;
+    padding: 8px;
+    border-radius: 16px;
+    border: none;
+    outline: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .input-form button {
+    margin-left: 8px;
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 16px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+  }
+  
