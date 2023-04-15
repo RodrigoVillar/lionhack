@@ -1,15 +1,19 @@
 import openai
 import re
+from main import TX, send_tx
+from dotenv import dotenv_values
+
+config = dotenv_values("../.env")
 
 # Replace 'your_api_key' with your actual API key
-openai.api_key = "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"
+openai.api_key = config["GPT_API_KEY"]
 
 def extract_info(prompt):
     response = openai.Completion.create(
         engine="text-davinci-002",
         prompt=f"Extract the key information from the following user command: {prompt}",
         temperature=0,
-        max_tokens=10000,
+        max_tokens=100,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0,
@@ -17,7 +21,7 @@ def extract_info(prompt):
 
     return response.choices[0].text.strip()
 
-user_command = "I wanna send 50 ETH from 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2 to 0x00000000219ab540356cBB839Cbe05303d7705Fa"
+user_command = "I wanna send 0.00001 ETH from 0x9262c5fC4fFa3C756F050cb405c3c18B7aF49CF9 to 0x7f610402ccc4CC1BEbcE9699819200f5f28ED6e3"
 
 # Use ChatGPT API to extract key information
 extracted_info = extract_info(user_command)
@@ -41,5 +45,9 @@ if receiver_address and sender_address and amount_regex:
     print(f"Receiver address: {receiver_address}")
     print(f"Sender address: {sender_address}")
     print(f"Amount: {amount} ETH")
+    
+    tx = TX(sender_address, receiver_address, amount)
+    send_tx(tx)
+
 else:
     print("Failed to extract required information.")
