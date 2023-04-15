@@ -22,10 +22,15 @@ const InputForm = (props) => {
     setInput(event.target.value);
   };
 
-  const checkForTriggerWord = (input) => {
-    const triggerWord = 'connect';
+  const checkForEthereum = (input) => {
+    const triggerWord = 'ethereum';
     return input.trim().toLowerCase() === triggerWord;
   };
+
+  const checkForSolana = (input) => {
+    const triggerWord = 'solana';
+    return input.trim().toLowerCase() === triggerWord;
+  }
 
   const connectMetaMask = async () => {
     if (provider) {
@@ -44,6 +49,24 @@ const InputForm = (props) => {
       console.log('MetaMask is not installed.');
     }
   };
+
+  async function connectPhantom() {
+    // Check if the window.solana object is available
+    if (!window.solana) {
+      alert('Please install the Phantom wallet to use this feature.');
+      return;
+    }
+  
+    // Connect to the Phantom wallet
+    const provider = window.solana;
+    await provider.connect();
+  
+    // Get the user's public key
+    const publicKey = provider.publicKey.toBase58();
+  
+    // Log the user's public key to the console
+    console.log(`Connected to Phantom wallet with public key: ${publicKey}`);
+  }
 
 //   const sendToBackend = async (message) => {
 //     try {
@@ -81,11 +104,16 @@ const sendToBackend = async (message) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (checkForTriggerWord(input)) {
+    if (checkForEthereum(input)) {
       props.onSendMessage(input);
       connectMetaMask();
       sendToBackend(input);
       setInput('');
+    } else if(checkForSolana(input)){
+        props.onSendMessage(input);
+        connectPhantom();
+        sendToBackend(input);
+        setInput('');
     } else {
       props.onSendMessage(input);
       sendToBackend(input);
