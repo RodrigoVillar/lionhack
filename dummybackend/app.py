@@ -2,14 +2,12 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-@app.route('/process_input', methods=['POST'])
-def process_input():
-    user_input = request.json['user_input']
-    
-    # Process the user input here
-    response = f"Received input: {user_input}"
-    
-    return jsonify({"response": response})
+@app.route('/api/messages', methods=['POST'])
+def handle_message():
+    message = request.json['message']
+    # Do some processing on the message
+    response = {'status': 'success', 'message': f'Received message: {message}'}
+    return jsonify(response)
 
 if __name__ == '__main__':
     app.run(debug=True)
