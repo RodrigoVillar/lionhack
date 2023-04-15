@@ -1,3 +1,10 @@
 .env
+<<<<<<< HEAD
 backend/venv/
 frontend/node_modules
+=======
+backend/venv
+frontend/package-lock.json
+frontend/node_modules
+backend/venvblockchain
+>>>>>>> happy-branch
