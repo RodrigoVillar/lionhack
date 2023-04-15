@@ -1,25 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import InputForm from './components/chatbot/InputForm.js';
 import './App.css';
-import InputForm from './components/chatbot/InputForm';
-import MessageList from './components/chatbot/MessageList';
-import Chatbot from './components/chatbot/Chatbot'
 
-function App() {
-  const [messages, setMessages] = useState([]);
+const App = () => {
+  const [messages, setMessages] = useState([{ text: 'Hello! What network would you like to use today?', sender: 'bot' }]);
 
-  const handleSendMessage = (message) => {
-    setMessages([...messages, { text: message, sender: 'user' }]);
-    // Add your logic for the chatbot response here
+  const handleSendMessage = (messageText, sender) => {
+    setMessages((prevMessages) => [...prevMessages, { text: messageText, sender }]);
   };
 
   return (
-    <div className="App">
-      <div className="chat-container">
-        <MessageList messages={messages} />
-        <InputForm onSendMessage={handleSendMessage} />
+    <div className="chatbot-container">
+      <div className="message-list">
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`message ${message.sender === 'user' ? 'user' : 'bot'}`}
+          >
+            {message.text}
+          </div>
+        ))}
       </div>
+      <InputForm onSendMessage={handleSendMessage} />
     </div>
   );
-}
+};
 
 export default App;
