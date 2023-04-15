@@ -174,7 +174,7 @@ const sendToBackend = async (message) => {
       const data = await response.json();
       console.log('Response from backend:', data);
     } catch (error) {
-      console.error('Error sending message to backend:', error);
+      console.error('Error sending message to backend:', error);  
     }
   };
 

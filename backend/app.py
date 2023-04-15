@@ -16,7 +16,7 @@ sender_address = ""
 receiver_address = ""
 amount = 0.0
 
-@app.route('/api/messages', methods=['POST'])
+@app.route('/api/messages', methods=['POST','GET'])
 def post_message():
     global sender_address, receiver_address, amount
     message = request.get_json().get('message')
@@ -38,7 +38,7 @@ def post_message():
     if ("ETH" in message):
         if (sender_address != "" and receiver_address != "" and amount != 0):
             tx = TX(sender_address, receiver_address, amount, "ETH")
-            send_tx(tx)
+            test = json.dumps(to_dict(tx))
     
     if ("SOL" in message):
         if (sender_address != "" and receiver_address != "" and amount != 0):
@@ -47,12 +47,12 @@ def post_message():
     if ("AVAX" in message):
         if (sender_address != "" and receiver_address != "" and amount != 0):
             tx = TX(sender_address, receiver_address, amount, "AVAX")
-            send_tx(tx)
+            test = json.dumps(to_dict(tx))
     if ("AGOR" in message):
         if (sender_address != "" and receiver_address != "" and amount != 0):
             tx = TX(sender_address, receiver_address, amount, "AGOR")
-            send_tx(tx)
-
+            test = json.dumps(to_dict(tx))
+            
     response = make_response(json.dumps({'success': True}))
     response.headers['Content-Type'] = 'application/json'
     return response
