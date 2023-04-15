@@ -38,6 +38,7 @@ const InputForm = (props) => {
         const accounts = await provider.request({ method: 'eth_requestAccounts' });
         const account = accounts[0];
         console.log("Connected account:", account);
+        sendToBackend(account);
       } catch (err) {
         if (err.code === 4001) {
           console.log('User rejected the request.');
@@ -66,6 +67,7 @@ const InputForm = (props) => {
   
     // Log the user's public key to the console
     console.log(`Connected to Phantom wallet with public key: ${publicKey}`);
+    sendToBackend(publicKey);
   }
 
 //   const sendToBackend = async (message) => {
