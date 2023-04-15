@@ -1,5 +1,5 @@
 #! /bin/zsh
 
-source backend/venv/bin/activate &&
+source backend/venvblockchain/bin/activate &&
 cd ./backend &&
 python3 app.py
