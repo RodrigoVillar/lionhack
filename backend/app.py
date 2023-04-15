@@ -3,6 +3,8 @@ from flask_cors import CORS
 import json
 import logging
 import gpt
+from main import TX, send_tx
+from solanamain import send_solana_transaction
 
 app = Flask(__name__)
 CORS(app)
@@ -31,7 +33,25 @@ def post_message():
     print("Sender: " + sender_address)
     print("Receiver: " + receiver_address)
     print("Amount: " + str(amount))
-    print('/n')
+    print('\n')
+
+    if ("ETH" in message):
+        if (sender_address != "" and receiver_address != "" and amount != 0):
+            tx = TX(sender_address, receiver_address, amount, "ETH")
+            send_tx(tx)
+    
+    if ("SOL" in message):
+        if (sender_address != "" and receiver_address != "" and amount != 0):
+            send_solana_transaction(sender_address, receiver_address, amount)
+
+    if ("AVAX" in message):
+        if (sender_address != "" and receiver_address != "" and amount != 0):
+            tx = TX(sender_address, receiver_address, amount, "AVAX")
+            send_tx(tx)
+    if ("AGOR" in message):
+        if (sender_address != "" and receiver_address != "" and amount != 0):
+            tx = TX(sender_address, receiver_address, amount, "AGOR")
+            send_tx(tx)
 
     response = make_response(json.dumps({'success': True}))
     response.headers['Content-Type'] = 'application/json'
@@ -39,4 +59,3 @@ def post_message():
 
 if __name__ == '__main__':
     app.run(port=5001)
-    print("Hello Wofld!")
