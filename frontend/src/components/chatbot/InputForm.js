@@ -3,11 +3,12 @@ import detectEthereumProvider from '@metamask/detect-provider';
 import './InputForm.css';
 import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { Buffer } from 'buffer';
+import { Contract } from 'ethers';
+import { abi as IUniswapV2Router02ABI } from '@uniswap/v2-periphery/build/IUniswapV2Router02.json';
+
+const UNISWAP_GOERLI_ROUTER_ADDR = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
 
 window.Buffer = Buffer;
-
-
-
 
 const InputForm = (props) => {
   const [input, setInput] = useState('');
@@ -286,6 +287,79 @@ const InputForm = (props) => {
     }
   };
 
+  const sendSwap = async (transactionDetails, chainnum) => {
+    console.log("loading");
+      console.log(transactionDetails);
+      if (provider) {
+        try {
+          const chainId = '0x' + parseInt(chainnum).toString(16); // Ethereum Mainnet Chain ID
+          await provider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId }],
+          });
+          console.log("loading");
+          console.log(transactionDetails);
+          const accounts = await provider.request({ method: 'eth_requestAccounts' });
+          const from = accounts[0];
+          //NEED TO INPUT TESTNET TOKEN CONTRACTS HERE
+          const currency1addr = ''
+          const currency2addr = ''
+          const path = [currency1,currency2];
+          const recipient = account[0];
+
+          const { currency1, currency2} = transactionDetails;
+  
+          const tx = {
+            currency1,
+            currency2,
+          };
+  
+          const txHash = await provider.request({ method: 'eth_sendTransaction', params: [tx] });
+          console.log('Transaction hash:', txHash);
+          props.onSendMessage(`Transaction submitted! Transaction hash: ${txHash}`, 'bot');
+        } catch (err) {
+          if (err.code === 4001) {
+            console.log('User rejected the request.');
+          } else {
+            console.error(err);
+          }
+        }
+      } else {
+        console.log('MetaMask is not installed.');
+      }
+    };
+
+  async function sendSwap(tokenIn, tokenOut, amountIn, amountOutMin) {
+    if (provider) {
+      try {
+        const accounts = await provider.request({ method: 'eth_requestAccounts' });
+        const from = accounts[0];
+        const signer = provider.getSigner();
+  
+        const deadline = Math.floor(Date.now() / 1000) + 60 * 1; // 1 minute from the current Unix timestamp
+        const path = [tokenIn, tokenOut];
+  
+        const uniswapRouter = new Contract(UNISWAP_ROUTER_ADDRESS, IUniswapV2Router02ABI, signer);
+  
+        const tx = await uniswapRouter.swapExactTokensForTokens(
+          amountIn,
+          amountOutMin,
+          path,
+          from,
+          deadline
+        );
+  
+        await tx.wait();
+        console.log('Swap transaction hash:', tx.hash);
+        props.onSendMessage(`Swap transaction submitted! Transaction hash: ${tx.hash}`, 'bot');
+      } catch (err) {
+        console.error('Error executing swap:', err);
+      }
+    } else {
+      console.log('MetaMask is not installed.');
+    }
+  }
+
 
 
 
@@ -320,6 +394,8 @@ const InputForm = (props) => {
       await sendTransaction(newData, parseInt(newData['chain']));
     } else if (newData['currency'] === "solana") { // use the newData variable directly
       await sendSolanaTransaction(newData);
+    } else if (newData['type'] === 'swap') {
+      //await sendSwap();
     }
   };
 
