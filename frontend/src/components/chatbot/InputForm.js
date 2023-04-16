@@ -26,7 +26,7 @@ const InputForm = (props) => {
     const triggerWord = 'ethereum';
     return input.trim().toLowerCase() === triggerWord.toLowerCase();
   };
-  
+
   const checkForSolana = (input) => {
     const triggerWord = 'solana';
     return input.trim().toLowerCase() === triggerWord.toLowerCase();
@@ -50,14 +50,14 @@ const InputForm = (props) => {
           method: 'wallet_switchEthereumChain',
           params: [{ chainId }],
         });
-  
+
         // You can also connect to the account if needed, similar to connectMetaMask
-        const accounts = await provider.request({ method: 'eth_requestAccounts' });   
+        const accounts = await provider.request({ method: 'eth_requestAccounts' });
         const account = accounts[0];
         console.log("Connected account:", account);
         sendToBackend(account);
         props.onSendMessage(`Your Ethereum wallet has been connected! Your address in use is ${account}`, 'bot');
-    } catch (err) {
+      } catch (err) {
         if (err.code === 4001) {
           console.log('User rejected the request.');
         } else {
@@ -75,14 +75,14 @@ const InputForm = (props) => {
       alert('Please install the Phantom wallet to use this feature.');
       return;
     }
-  
+
     // Connect to the Phantom wallet
     const provider = window.solana;
     await provider.connect();
-  
+
     // Get the user's public key
     const publicKey = provider.publicKey.toBase58();
-  
+
     // Log the user's public key to the console
     console.log(`Connected to Phantom wallet with public key: ${publicKey}`);
     sendToBackend(publicKey);
@@ -96,7 +96,7 @@ const InputForm = (props) => {
           method: 'wallet_switchEthereumChain',
           params: [{ chainId }],
         });
-  
+
         // You can also connect to the account if needed, similar to connectMetaMask
         const accounts = await provider.request({ method: 'eth_requestAccounts' });
         const account = accounts[0];
@@ -115,7 +115,7 @@ const InputForm = (props) => {
       console.log('MetaMask is not installed.');
     }
   };
-  
+
   const connectArbitrum = async () => {
     if (provider) {
       try {
@@ -124,7 +124,7 @@ const InputForm = (props) => {
           method: 'wallet_switchEthereumChain',
           params: [{ chainId }],
         });
-  
+
         // You can also connect to the account if needed, similar to connectMetaMask
         const accounts = await provider.request({ method: 'eth_requestAccounts' });
         const account = accounts[0];
@@ -144,24 +144,26 @@ const InputForm = (props) => {
     }
   };
 
-//   const sendToBackend = async (message) => {
-//     try {
-//       const response = await fetch('http://localhost:5000/api/messages', {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({ message }),
-//       });
+  //   const sendToBackend = async (message) => {
+  //     try {
+  //       const response = await fetch('http://localhost:5000/api/messages', {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         body: JSON.stringify({ message }),
+  //       });
 
-//       const data = await response.json();
-//       console.log('Response from backend:', data);
-//     } catch (error) {
-//       console.error('Error sending message to backend:', error);
-//     }
-//   };
+  //       const data = await response.json();
+  //       console.log('Response from backend:', data);
+  //     } catch (error) {
+  //       console.error('Error sending message to backend:', error);
+  //     }
+  //   };
 
-const sendToBackend = async (message) => {
+  const [responseData, setResponseData] = useState(null);
+
+  const sendToBackend = async (message) => {
     try {
       const response = await fetch('http://localhost:5001/api/messages', {
         method: 'POST',
@@ -173,10 +175,12 @@ const sendToBackend = async (message) => {
 
       const data = await response.json();
       console.log('Response from backend:', data);
+      setResponseData(data); // store the response data in a state variable
     } catch (error) {
-      console.error('Error sending message to backend:', error);  
+      console.error('Error sending message to backend:', error);
     }
   };
+
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -191,22 +195,22 @@ const sendToBackend = async (message) => {
       sendToBackend(input);
       setInput('');
     } else if (checkForAvalanche(input)) {
-        props.onSendMessage(input, 'user');
-        connectAvalanche();
-        sendToBackend(input);
-        setInput('');
-    }else if (checkForArbitrum(input)) {
-        props.onSendMessage(input, 'user');
-        connectArbitrum();
-        sendToBackend(input);
-        setInput('');
-    }else {
+      props.onSendMessage(input, 'user');
+      connectAvalanche();
+      sendToBackend(input);
+      setInput('');
+    } else if (checkForArbitrum(input)) {
+      props.onSendMessage(input, 'user');
+      connectArbitrum();
+      sendToBackend(input);
+      setInput('');
+    } else {
       props.onSendMessage(input, 'user');
       sendToBackend(input);
       setInput('');
     }
   };
-  
+
 
   return (
     <form className="input-form" onSubmit={handleSubmit}>

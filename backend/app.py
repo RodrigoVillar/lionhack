@@ -18,7 +18,7 @@ receiver_address = ""
 amount = 0.0
 test = {}
 
-@app.route('/api/messages', methods=['POST','GET'])
+@app.route('/api/messages', methods=['POST'])
 def post_message():
     global sender_address, receiver_address, amount, test
     message = request.get_json().get('message')
