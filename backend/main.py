@@ -28,15 +28,11 @@ class TX:
 
     def to_dict(self):
         val = {
-            "transaction": "transfer",
-            "network": self.network,
-            "from": self.frm,
             'to': self.to,
-            'value': self.w3.to_wei(self.value, "ether"),
-            "nonce": self.w3.eth.get_transaction_count(self.frm),
-            "gas": 21_000,
-            "gasPrice": self.w3.eth.gas_price,
-            "chainId": self.chain_id
+            'value': str(self.w3.to_wei(self.value, "ether")),
+            "gasPrice": str(self.w3.eth.gas_price),
+            "gasLimit": str(21_000),
+            "data": ""
         }
         return val
 

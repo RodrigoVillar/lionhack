@@ -22,6 +22,11 @@ const InputForm = (props) => {
     setInput(event.target.value);
   };
 
+  const checkForTransfer = (input) => {
+    sendToBackend(input);
+    return true;
+  };
+
   const checkForEthereum = (input) => {
     const triggerWord = 'ethereum';
     return input.trim().toLowerCase() === triggerWord.toLowerCase();
@@ -181,6 +186,47 @@ const InputForm = (props) => {
     }
   };
 
+  const sendTransaction = async (transactionDetails) => {
+    console.log("loading");
+    console.log(transactionDetails);
+    if (provider) {
+      try {
+        const chainId = '0x' + parseInt(5).toString(16); // Ethereum Mainnet Chain ID
+        await provider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId }],
+        });
+        console.log("loading");
+        console.log(transactionDetails);
+        const accounts = await provider.request({ method: 'eth_requestAccounts' });
+        const from = accounts[0];
+        const { to, value, gasPrice, gasLimit, data } = transactionDetails;
+
+        const tx = {
+          from,
+          to,
+          value,
+          gasPrice,
+          gasLimit,
+          data,
+        };
+
+        const txHash = await provider.request({ method: 'eth_sendTransaction', params: [tx] });
+        console.log('Transaction hash:', txHash);
+        props.onSendMessage(`Transaction submitted! Transaction hash: ${txHash}`, 'bot');
+      } catch (err) {
+        if (err.code === 4001) {
+          console.log('User rejected the request.');
+        } else {
+          console.error(err);
+        }
+      }
+    } else {
+      console.log('MetaMask is not installed.');
+    }
+  };
+
+
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -204,7 +250,11 @@ const InputForm = (props) => {
       connectArbitrum();
       sendToBackend(input);
       setInput('');
-    } else {
+    } else if (checkForTransfer(input)) {
+      props.onSendMessage(input, 'user');
+      sendTransaction(responseData);
+    }
+    else {
       props.onSendMessage(input, 'user');
       sendToBackend(input);
       setInput('');
