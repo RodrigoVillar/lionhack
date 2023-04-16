@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import detectEthereumProvider from '@metamask/detect-provider';
 import './InputForm.css';
 import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { Buffer } from 'buffer';
+
+window.Buffer = Buffer;
+
 
 
 
@@ -233,13 +237,10 @@ const InputForm = (props) => {
     }
   };
 
-  const sendTransactionSolanaPhantom = async (transactionDetails) => {
-    console.log('loading');
-    console.log(transactionDetails);
-
-    const { to, value } = transactionDetails;
+  const sendSolanaTransaction = async (transactionDetails) => {
     const cluster = 'https://api.devnet.solana.com'; // Solana devnet
     const connection = new Connection(cluster, 'confirmed');
+    const { senderAddress, receiverAddress, amount } = transactionDetails
 
     if (window.solana && window.solana.isPhantom) {
       try {
@@ -251,16 +252,15 @@ const InputForm = (props) => {
         }
 
         // Get sender's public key from Phantom
-        const senderPublicKey = window.solana.publicKey;
-
+        const senderPublicKey = new PublicKey(senderAddress);
         // Get the recipient's public key
-        const recipientPublicKey = new PublicKey(to);
+        const recipientPublicKey = new PublicKey(receiverAddress);
 
         // Create the transaction instruction
         const instruction = SystemProgram.transfer({
           fromPubkey: senderPublicKey,
           toPubkey: recipientPublicKey,
-          lamports: value, // Note that the value is in lamports (1 SOL = 1,000,000,000 lamports)
+          lamports: Math.floor(amount), // Convert amount to lamports
         });
 
         // Create the transaction and add the instruction
@@ -276,7 +276,7 @@ const InputForm = (props) => {
         // Send the signed transaction
         const txid = await connection.sendRawTransaction(signedTransaction.serialize());
 
-        console.log('Transaction hash:', txid);
+        console.log('Transaction response:', txid);
         props.onSendMessage(`Transaction submitted! Transaction hash: ${txid}`, 'bot');
       } catch (err) {
         console.error('Error sending transaction:', err);
@@ -318,9 +318,9 @@ const InputForm = (props) => {
       setInput('');
     } else if (newData['type'] === "transfer") { // use the newData variable directly
       await sendTransaction(newData, parseInt(newData['chain']));
-    } //else if (newData['currency'] === "solana") { // use the newData variable directly
-    //await sendTransactionSolanaPhantom(newData);
-    //}
+    } else if (newData['currency'] === "solana") { // use the newData variable directly
+      await sendSolanaTransaction(newData);
+    }
   };
 
 
