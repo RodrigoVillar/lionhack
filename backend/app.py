@@ -5,6 +5,7 @@ import logging
 import gpt
 from main import TX, send_tx
 from solanamain import send_solana_transaction
+import re
 
 app = Flask(__name__)
 CORS(app)
@@ -22,6 +23,16 @@ def post_message():
     global sender_address, receiver_address, amount, test
     message = request.get_json().get('message')
     #print(message)
+    extracted_info = gpt.extract_info(message)
+    pattern = r'\b[A-Z]{3,4}\b'
+    matches = re.findall(pattern, extracted_info)
+    if (len(matches) == 2):
+        pattern = r'(-?\d+(\.\d+)?)\s+\b[A-Z]{3,4}\b'
+        match = re.search(pattern, extracted_info)
+        number = float(match.group(1))
+        print({"transaction": "swap", "currency1": matches[0], "currency2": matches[1], "amount": number})
+        return {"transaction": "swap", "currency1": matches[0], "currency2": matches[1], "amount": number}
+
     output = gpt.process_user_command(message)
     #print(output)
     if (output['sender_address'] != None):

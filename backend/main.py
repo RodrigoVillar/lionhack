@@ -9,12 +9,15 @@ class TX:
     def __init__(self, frm, to, value, chain):
         self.value = value
         if chain == "ETH":
+            self.network = "Ethereum"
             self.w3 = Web3(Web3.HTTPProvider(config["ALCHEMY_API_URL"]))
             self.chain_id = 5  # Goerli Testnet
         elif chain == "AGOR":
+            self.network = "Arbitrum"
             self.w3 = Web3(Web3.HTTPProvider(config["ARBITRUM_URL"]))
             self.chain_id = 421613  # Arbitrum Goerli Testnet
         elif chain == "AVAX":
+            self.network = "Avalanche"
             self.w3 = Web3(Web3.HTTPProvider(config["AVA_URL"]))
             self.chain_id = 43113  # Fuji Testnet (Avalanche C-Chain)
         else:
@@ -25,6 +28,8 @@ class TX:
 
     def to_dict(self):
         val = {
+            "transaction": "transfer",
+            "network": self.network,
             "from": self.frm,
             'to': self.to,
             'value': self.w3.to_wei(self.value, "ether"),
