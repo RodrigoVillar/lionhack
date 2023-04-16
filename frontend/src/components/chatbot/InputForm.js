@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import detectEthereumProvider from '@metamask/detect-provider';
 import './InputForm.css';
+import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+
+
 
 const InputForm = (props) => {
   const [input, setInput] = useState('');
   const [provider, setProvider] = useState(null);
+  const [responseData, setResponseData] = useState(null);
+
 
   useEffect(() => {
     const initProvider = async () => {
@@ -22,9 +27,10 @@ const InputForm = (props) => {
     setInput(event.target.value);
   };
 
-  const checkForTransfer = (input) => {
-    sendToBackend(input);
-    return true;
+  const checkForTransfer = () => {
+    console.log("we're checking")
+    console.log(responseData)
+    return responseData['type'] === "transfer";
   };
 
   const checkForEthereum = (input) => {
@@ -124,7 +130,7 @@ const InputForm = (props) => {
   const connectArbitrum = async () => {
     if (provider) {
       try {
-        const chainId = '0x' + parseInt(421613).toString(16); // Avalanche Testnet Chain ID
+        const chainId = '0x' + parseInt(421613).toString(16); // Arbitrum Testnet Chain ID
         await provider.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId }],
@@ -135,13 +141,13 @@ const InputForm = (props) => {
         const account = accounts[0];
         console.log("Connected account:", account);
         sendToBackend(account);
-        props.onSendMessage(`Your Avalanche wallet has been connected! Your address in use is ${account}`, 'bot');
+        props.onSendMessage(`Your Arbitrum wallet has been connected! Your address in use is ${account}`, 'bot');
       } catch (error) {
         console.error(error);
         if (error.code === 4902) {
           console.log('The requested chainId cannot be added.');
         } else {
-          console.log('There was an issue switching to the Avalanche network.');
+          console.log('There was an issue switching to the Arbitrum network.');
         }
       }
     } else {
@@ -166,7 +172,6 @@ const InputForm = (props) => {
   //     }
   //   };
 
-  const [responseData, setResponseData] = useState(null);
 
   const sendToBackend = async (message) => {
     try {
@@ -180,18 +185,20 @@ const InputForm = (props) => {
 
       const data = await response.json();
       console.log('Response from backend:', data);
-      setResponseData(data); // store the response data in a state variable
+      return data; // return the response data
     } catch (error) {
       console.error('Error sending message to backend:', error);
     }
   };
 
-  const sendTransaction = async (transactionDetails) => {
+
+
+  const sendTransaction = async (transactionDetails, chainnum) => {
     console.log("loading");
     console.log(transactionDetails);
     if (provider) {
       try {
-        const chainId = '0x' + parseInt(5).toString(16); // Ethereum Mainnet Chain ID
+        const chainId = '0x' + parseInt(chainnum).toString(16); // Ethereum Mainnet Chain ID
         await provider.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId }],
@@ -226,40 +233,97 @@ const InputForm = (props) => {
     }
   };
 
+  const sendTransactionSolanaPhantom = async (transactionDetails) => {
+    console.log('loading');
+    console.log(transactionDetails);
 
+    const { to, value } = transactionDetails;
+    const cluster = 'https://api.devnet.solana.com'; // Solana devnet
+    const connection = new Connection(cluster, 'confirmed');
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (checkForEthereum(input)) {
-      props.onSendMessage(input, 'user');
-      connectMetaMask();
-      sendToBackend(input);
-      setInput('');
-    } else if (checkForSolana(input)) {
-      props.onSendMessage(input, 'user');
-      connectPhantom();
-      sendToBackend(input);
-      setInput('');
-    } else if (checkForAvalanche(input)) {
-      props.onSendMessage(input, 'user');
-      connectAvalanche();
-      sendToBackend(input);
-      setInput('');
-    } else if (checkForArbitrum(input)) {
-      props.onSendMessage(input, 'user');
-      connectArbitrum();
-      sendToBackend(input);
-      setInput('');
-    } else if (checkForTransfer(input)) {
-      props.onSendMessage(input, 'user');
-      sendTransaction(responseData);
-    }
-    else {
-      props.onSendMessage(input, 'user');
-      sendToBackend(input);
-      setInput('');
+    if (window.solana && window.solana.isPhantom) {
+      try {
+        // Connect to Phantom wallet
+        const isConnected = await window.solana.connect();
+        if (!isConnected) {
+          console.log('Failed to connect to Phantom wallet');
+          return;
+        }
+
+        // Get sender's public key from Phantom
+        const senderPublicKey = window.solana.publicKey;
+
+        // Get the recipient's public key
+        const recipientPublicKey = new PublicKey(to);
+
+        // Create the transaction instruction
+        const instruction = SystemProgram.transfer({
+          fromPubkey: senderPublicKey,
+          toPubkey: recipientPublicKey,
+          lamports: value, // Note that the value is in lamports (1 SOL = 1,000,000,000 lamports)
+        });
+
+        // Create the transaction and add the instruction
+        const transaction = new Transaction().add(instruction);
+
+        // Set the transaction's recentBlockhash and signers
+        transaction.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;
+        transaction.setSigners(senderPublicKey);
+
+        // Request Phantom to sign the transaction
+        const signedTransaction = await window.solana.signTransaction(transaction);
+
+        // Send the signed transaction
+        const txid = await connection.sendRawTransaction(signedTransaction.serialize());
+
+        console.log('Transaction hash:', txid);
+        props.onSendMessage(`Transaction submitted! Transaction hash: ${txid}`, 'bot');
+      } catch (err) {
+        console.error('Error sending transaction:', err);
+      }
+    } else {
+      console.log('Phantom wallet is not installed.');
     }
   };
+
+
+
+
+
+
+  const handleSubmit = async (event) => {
+    setInput('');
+    props.onSendMessage(input, 'user');
+    event.preventDefault();
+
+    const newData = await sendToBackend(input); // store the response data directly in a variable
+    console.log("already analyzed data");
+    console.log(newData);
+
+    if (checkForEthereum(input)) {
+      //props.onSendMessage(input, 'user');
+      await connectMetaMask();
+      setInput('');
+    } else if (checkForSolana(input)) {
+      //props.onSendMessage(input, 'user');
+      await connectPhantom();
+      setInput('');
+    } else if (checkForAvalanche(input)) {
+      //props.onSendMessage(input, 'user');
+      await connectAvalanche();
+      setInput('');
+    } else if (checkForArbitrum(input)) {
+      //props.onSendMessage(input, 'user');
+      await connectArbitrum();
+      setInput('');
+    } else if (newData['type'] === "transfer") { // use the newData variable directly
+      await sendTransaction(newData, parseInt(newData['chain']));
+    } //else if (newData['currency'] === "solana") { // use the newData variable directly
+    //await sendTransactionSolanaPhantom(newData);
+    //}
+  };
+
+
 
 
   return (

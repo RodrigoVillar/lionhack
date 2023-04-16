@@ -28,7 +28,9 @@ class TX:
 
     def to_dict(self):
         val = {
-            'to': self.to,
+            'chain': str(self.chain_id),
+            'type': "transfer",
+            'to': str(self.to),
             'value': str(self.w3.to_wei(self.value, "ether")),
             "gasPrice": str(self.w3.eth.gas_price),
             "gasLimit": str(21_000),
