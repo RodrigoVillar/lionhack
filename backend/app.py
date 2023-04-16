@@ -54,7 +54,7 @@ def post_message():
     
     if ("SOL" in message):
         if (sender_address != "" and receiver_address != "" and amount != 0):
-            test = {'currency': 'solana', 'to': str(receiver_address), 'value': str(int(amount * 1000000000)), 'programId': 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA', 'space': 165}
+            test = {'currency': 'solana', 'senderAddress': str(sender_address),'receiverAddress': str(receiver_address), 'amount': str(int(amount * 1000000000)), 'programId': 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA', 'space': 165}
             #send_solana_transaction(sender_address, receiver_address, amount)
 
     if ("AVAX" in message):
