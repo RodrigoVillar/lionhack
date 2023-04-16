@@ -15,10 +15,11 @@ log.setLevel(logging.ERROR)
 sender_address = ""
 receiver_address = ""
 amount = 0.0
+test = {}
 
 @app.route('/api/messages', methods=['POST','GET'])
 def post_message():
-    global sender_address, receiver_address, amount
+    global sender_address, receiver_address, amount, test
     message = request.get_json().get('message')
     #print(message)
     output = gpt.process_user_command(message)
@@ -38,7 +39,7 @@ def post_message():
     if ("ETH" in message):
         if (sender_address != "" and receiver_address != "" and amount != 0):
             tx = TX(sender_address, receiver_address, amount, "ETH")
-            test = json.dumps(to_dict(tx))
+            test = json.dumps(TX.to_dict(tx))
     
     if ("SOL" in message):
         if (sender_address != "" and receiver_address != "" and amount != 0):
@@ -47,15 +48,15 @@ def post_message():
     if ("AVAX" in message):
         if (sender_address != "" and receiver_address != "" and amount != 0):
             tx = TX(sender_address, receiver_address, amount, "AVAX")
-            test = json.dumps(to_dict(tx))
+            test = json.dumps(TX.to_dict(tx))
     if ("AGOR" in message):
         if (sender_address != "" and receiver_address != "" and amount != 0):
             tx = TX(sender_address, receiver_address, amount, "AGOR")
-            test = json.dumps(to_dict(tx))
-            
-    response = make_response(json.dumps({'success': True}))
-    response.headers['Content-Type'] = 'application/json'
-    return response
+            test = json.dumps(TX.to_dict(tx))
+    # response = make_response(json.dumps({'success': True}))
+    # response.headers['Content-Type'] = 'application/json'
+    #print(test)
+    return test
 
 if __name__ == '__main__':
     app.run(port=5001)
