@@ -217,11 +217,11 @@ const InputForm = (props) => {
           from,
           to,
           value,
-          gasPrice,
+          // gasPrice,
           gasLimit,
           data,
         };
-
+        //console.log("this is the {")
         const txHash = await provider.request({ method: 'eth_sendTransaction', params: [tx] });
         console.log('Transaction hash:', txHash);
         props.onSendMessage(`Transaction submitted! Transaction hash: ${txHash}`, 'bot');
