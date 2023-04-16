@@ -5,6 +5,7 @@ import logging
 import gpt
 from main import TX, send_tx
 from solanamain import send_solana_transaction
+import re
 
 app = Flask(__name__)
 CORS(app)
@@ -15,12 +16,23 @@ log.setLevel(logging.ERROR)
 sender_address = ""
 receiver_address = ""
 amount = 0.0
+test = {}
 
 @app.route('/api/messages', methods=['POST'])
 def post_message():
-    global sender_address, receiver_address, amount
+    global sender_address, receiver_address, amount, test
     message = request.get_json().get('message')
     #print(message)
+    extracted_info = gpt.extract_info(message)
+    pattern = r'\b[A-Z]{3,4}\b'
+    matches = re.findall(pattern, extracted_info)
+    if (len(matches) == 2):
+        pattern = r'(-?\d+(\.\d+)?)\s+\b[A-Z]{3,4}\b'
+        match = re.search(pattern, extracted_info)
+        number = float(match.group(1))
+        print({"transaction": "swap", "currency1": matches[0], "currency2": matches[1], "amount": number})
+        return {"transaction": "swap", "currency1": matches[0], "currency2": matches[1], "amount": number}
+
     output = gpt.process_user_command(message)
     #print(output)
     if (output['sender_address'] != None):
@@ -38,24 +50,29 @@ def post_message():
     if ("ETH" in message):
         if (sender_address != "" and receiver_address != "" and amount != 0):
             tx = TX(sender_address, receiver_address, amount, "ETH")
-            send_tx(tx)
+            test = json.dumps(TX.to_dict(tx))
     
     if ("SOL" in message):
         if (sender_address != "" and receiver_address != "" and amount != 0):
-            send_solana_transaction(sender_address, receiver_address, amount)
+            test = {'currency': 'solana', 'senderAddress': str(sender_address),'receiverAddress': str(receiver_address), 'amount': str(int(amount * 1000000000)), 'programId': 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA', 'space': 165}
+            #send_solana_transaction(sender_address, receiver_address, amount)
 
     if ("AVAX" in message):
         if (sender_address != "" and receiver_address != "" and amount != 0):
             tx = TX(sender_address, receiver_address, amount, "AVAX")
-            send_tx(tx)
+            test = json.dumps(TX.to_dict(tx))
     if ("AGOR" in message):
         if (sender_address != "" and receiver_address != "" and amount != 0):
             tx = TX(sender_address, receiver_address, amount, "AGOR")
-            send_tx(tx)
-
-    response = make_response(json.dumps({'success': True}))
-    response.headers['Content-Type'] = 'application/json'
-    return response
+            test = json.dumps(TX.to_dict(tx))
+    
+    if ("NEAR" in message):
+        if (sender_address != "" and receiver_address != "" and amount != 0):
+            test = {}
+    # response = make_response(json.dumps({'success': True}))
+    # response.headers['Content-Type'] = 'application/json'
+    #print(test)
+    return test
 
 if __name__ == '__main__':
     app.run(port=5001)

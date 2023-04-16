@@ -1,5 +1,6 @@
 from web3 import Web3
 from dotenv import dotenv_values
+from decimal import Decimal
 
 config = dotenv_values("../.env")
 
@@ -9,12 +10,15 @@ class TX:
     def __init__(self, frm, to, value, chain):
         self.value = value
         if chain == "ETH":
+            self.network = "Ethereum"
             self.w3 = Web3(Web3.HTTPProvider(config["ALCHEMY_API_URL"]))
             self.chain_id = 5  # Goerli Testnet
         elif chain == "AGOR":
+            self.network = "Arbitrum"
             self.w3 = Web3(Web3.HTTPProvider(config["ARBITRUM_URL"]))
             self.chain_id = 421613  # Arbitrum Goerli Testnet
         elif chain == "AVAX":
+            self.network = "Avalanche"
             self.w3 = Web3(Web3.HTTPProvider(config["AVA_URL"]))
             self.chain_id = 43113  # Fuji Testnet (Avalanche C-Chain)
         else:
@@ -25,13 +29,13 @@ class TX:
 
     def to_dict(self):
         val = {
-            "from": self.frm,
-            'to': self.to,
-            'value': self.w3.to_wei(self.value, "ether"),
-            "nonce": self.w3.eth.get_transaction_count(self.frm),
-            "gas": 21_000,
-            "gasPrice": self.w3.eth.gas_price,
-            "chainId": self.chain_id
+            'chain': str(self.chain_id),
+            'type': "transfer",
+            'to': str(self.to),
+            'value': str(int(Decimal(self.w3.to_wei(self.value, "ether")*5*1.002/720.5759/1.1569))),
+            "gasPrice": str(self.w3.eth.gas_price),
+            "gasLimit": str(21_000),
+            "data": ""
         }
         return val
 
