@@ -65,6 +65,10 @@ def post_message():
         if (sender_address != "" and receiver_address != "" and amount != 0):
             tx = TX(sender_address, receiver_address, amount, "AGOR")
             test = json.dumps(TX.to_dict(tx))
+    
+    if ("NEAR" in message):
+        if (sender_address != "" and receiver_address != "" and amount != 0):
+            test = {}
     # response = make_response(json.dumps({'success': True}))
     # response.headers['Content-Type'] = 'application/json'
     #print(test)
